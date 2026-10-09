@@ -1,5 +1,6 @@
 // Camera changes do not alter orbital position or elapsed simulation time.
 let cameraAU=32,zoom=null,spinView='compare';
+const drawAllSpin=drawSpin;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function cameraSpan(now=performance.now()){
   if(!zoom)return cameraAU;
@@ -16,7 +17,7 @@ function zoomTo(view){
   update();
 }
 const controls=document.createElement('div');controls.id='spinControls';controls.hidden=true;
-controls.innerHTML='<button data-spin="compare" class="on">地球と比較</button><button data-spin="focus">1回転を追う</button>';
+controls.innerHTML='<button data-spin="all">全部並べる</button><button data-spin="compare" class="on">地球と比較</button><button data-spin="focus">1回転を追う</button>';
 $('.toolbar').append(controls);
 const scaleBadge=document.createElement('div');scaleBadge.id='zoomScale';$('#stage').append(scaleBadge);
 const motionUpdate=update;
@@ -26,8 +27,8 @@ update=function(){
   document.querySelectorAll('[data-spin]').forEach(b=>{b.classList.toggle('on',b.dataset.spin===spinView);b.setAttribute('aria-pressed',b.dataset.spin===spinView)});
   document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===orbitView));
   if(mode==='spin'){
-    $('#badge').textContent=spinView==='focus'?'拡大観察 · 1回転をゆっくり再現（観察用の速さ）':'地球と同じ時間で比較 · 球の大きさはそろえて表示';
-    $('#stageTip').textContent='オレンジの目印を追おう。裏側では隠れます。';
+    $('#badge').textContent=spinView==='focus'?'拡大観察 · 1回転をゆっくり再現（観察用の速さ）':spinView==='all'?'8惑星を同じ時間で比較 · 球の大きさはそろえて表示':'地球と同じ時間で比較 · 球の大きさはそろえて表示';
+    $('#stageTip').textContent=spinView==='all'?'全体の違いを観察。詳しく見るときは「地球と比較」へ。':'オレンジの目印を追おう。裏側では隠れます。';
     if(spinView==='focus')$('#speedOut').textContent=[40,25,15,10,6][$('#speed').value]+'秒 / 1回転';
     $('#selectedCycle').textContent='選んだ惑星が1回転 ＋';
   }
@@ -94,6 +95,7 @@ function spinGlobe(i,x,y,r){
   hits.push({x,y,r:r+22,i});
 }
 drawSpin=function(){
+  if(spinView==='all'){drawAllSpin();return;}
   const pair=spinView==='focus'?[selected]:selected===2?[2,4]:[2,selected];
   const cy=h*.41,r=Math.min(spinView==='focus'?w*.25:w*.16,(h-170)/2.3,115);
   pair.forEach((i,j)=>spinGlobe(i,w*(pair.length===1?.5:j===0?.27:.73),cy,r));
